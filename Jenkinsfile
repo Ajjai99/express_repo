@@ -7,14 +7,13 @@ pipeline{
     stages{
         stage("Git Checkout"){
             steps{
-                checkout scm
+                git branch: 'main', credentialsId: 'GitHub_Credential', url: 'https://github.com/Ajjai99/express_repo.git'
             }
         }
 
-        stage("Test"){
+        stage("Install Dependencies"){
             steps{
                 sh "npm install"
-                sh "npm test"
             }
         }
 
@@ -22,6 +21,20 @@ pipeline{
             steps{
                 sh "npm run build"
             }
+        }
+
+        stage("Docker Build and Push"){
+            steps{
+                script{
+                    withDockerRegistry(toolName: 'docker', url: 'https://hub.docker.com/') {
+                        sh "docker build -t express:latest ."
+                        sh "docker tag express:latest ajjai007/express:latest"
+                        sh "docker push ajjai007/express:latest"
+                    
+                    }
+                }
+            }
+
         }
     }
 }
